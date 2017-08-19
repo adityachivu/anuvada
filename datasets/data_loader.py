@@ -14,7 +14,7 @@ class CreateDataset():
 
     def generate_tokens(self, description):
         doc = nlp(unicode(description, 'utf-8'))
-        return [x.orth_ for x in doc]
+        return [x.lower_ for x in doc]
 
     def prepare_vocabulary(self, data):
         unique_id = Counter()
@@ -55,7 +55,7 @@ class CreateDataset():
         for i in xrange(data_padded.shape[0]):
             for j in xrange(data_padded.shape[1]):
                 try:
-                    data_padded[i][j] = df['data_tokens'][i][j]
+                    data_padded[i][j] = df['data_tokens'].values[i][j]
                 except IndexError:
                     pass
 

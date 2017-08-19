@@ -7,6 +7,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 from torch.nn.utils.rnn import pack_padded_sequence
 from torch.nn.utils.rnn import pad_packed_sequence
+import codecs
 
 from fit_module import FitModule
 
@@ -105,6 +106,25 @@ class AttentionClassifier(FitModule):
         attention_norm = self.attention_softmax(attention.transpose(1, 0))
         return attention_norm
 
+    def visualize_attention(self, x, mask, id2token, filepath):
+        x = Variable(x)
+        initial_state = self.init_hidden()
+        # print initial_state.size()
+        embedded = self.lookup(x)
+        embedded = embedded.transpose(0,1)
+        masked_sequence = pack_padded_sequence(embedded, mask)
+        rnn_output, _ = self.gru(masked_sequence, initial_state)
+        attention_squish = self.batch_matmul_bias(pad_packed_sequence(rnn_output)[0], self.weight_attention,
+                                                  self.bias_attention, nonlinearity='tanh')
+        attention = self.batch_matmul(attention_squish, self.weight_projection)
+        attention_norm = self.attention_softmax(attention.transpose(1, 0))
+        attention_values = attention_norm[0,:].data.cpu().numpy()
+        x = list(x[0,:].data.cpu().numpy())
+        words = [id2token[y] for y in x]
+        with codecs.open(filepath, "w",encoding="utf-8") as html_file:
+            for word, alpha in zip(words, attention_values / attention_values.max()):
+                html_file.write('<font style="background: rgba(255, 255, 0, %f)">%s</font>\n' % (alpha, word))
+        return None
 
     def init_hidden(self):
         return Variable(torch.zeros(2, self.batch_size, self.gru_hidden))
