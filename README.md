@@ -120,6 +120,12 @@ loss = acf.fit(x,y, lengths_mask ,epochs=5)
 - [x] Implement support for masking gradients in RNN (Working now!)
 - [x] Implement a generic data set loader
 - [ ] Implement CNN Classifier with feature map visualisation
+- [ ] Implement support for validation split
+- [ ] Separate modules for CNN and RNN
+- [ ] Implement GPU Support
+- [ ] Implement support for custom loss function, learning rate tuning, custom metrics
+- [ ] Support for loading and saving models
+- [ ] Look into early stopping, learning rate scheduler functions for proper tuning
 
 ## Acknowledgments
 
