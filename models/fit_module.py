@@ -81,6 +81,7 @@ class FitModule(Module):
             split = int(x.size()[0] * (1. - validation_split))
             x, val_x = x[:split], x[split:]
             y, val_y = y[:split], y[split:]
+            masks_for_rnn, masks_for_rnn_val = masks_for_rnn[:split], masks_for_rnn[split:]
         else:
             val_x, val_y = None, None
         # Compile optimizer
@@ -127,8 +128,8 @@ class FitModule(Module):
             if metrics:
                 y_train_pred = self.predict(x, batch_size)
                 add_metrics_to_log(log, metrics, y, y_train_pred)
-            if val_x is not None and val_y is not None:
-                y_val_pred = self.predict(val_x, batch_size)
+            if val_x is not None and val_y is not None and masks_for_rnn_val is not None:
+                y_val_pred = self.predict(val_x, masks_for_rnn_val)
                 val_loss = loss(Variable(y_val_pred), Variable(val_y))
                 log['val_loss'] = val_loss.data[0]
                 if metrics:

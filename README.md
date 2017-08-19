@@ -115,12 +115,12 @@ loss = acf.fit(x,y, lengths_mask ,epochs=5)
 ## To do list
 
 - [x] Implement Attention with RNN
-- [ ] Implement Attention Visualisation
+- [x] Implement Attention Visualisation
 - [x] Implement working Fit Module
 - [x] Implement support for masking gradients in RNN (Working now!)
 - [x] Implement a generic data set loader
 - [ ] Implement CNN Classifier with feature map visualisation
-- [ ] Implement support for validation split
+- [x] Implement support for validation split
 - [ ] Separate modules for CNN and RNN
 - [ ] Implement GPU Support
 - [ ] Implement support for custom loss function, learning rate tuning, custom metrics
