@@ -93,7 +93,7 @@ class AttentionClassifier(FitModule):
 
     def get_attention(self, x, mask):
         # print padded_sequence.size()
-        x = Variable(x)
+        x = Variable(x).type(self.embedding_tensor)
         initial_state = self.init_hidden()
         # print initial_state.size()
         embedded = self.lookup(x)
@@ -107,7 +107,7 @@ class AttentionClassifier(FitModule):
         return attention_norm
 
     def visualize_attention(self, x, mask, id2token, filepath):
-        x = Variable(x)
+        x = Variable(x).type(self.embedding_tensor)
         initial_state = self.init_hidden()
         # print initial_state.size()
         embedded = self.lookup(x)
@@ -127,4 +127,4 @@ class AttentionClassifier(FitModule):
         return None
 
     def init_hidden(self):
-        return Variable(torch.zeros(2, self.batch_size, self.gru_hidden))
+        return Variable(torch.zeros(2, self.batch_size, self.gru_hidden)).type(self.dtype)

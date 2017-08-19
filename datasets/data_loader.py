@@ -36,7 +36,8 @@ class CreateDataset():
         vocab_full = self.prepare_vocabulary(x)
         vocab_threshold = self.create_threshold(vocab_full)
         token2id = self.create_token2id_dict(list(vocab_threshold))
-        token2id['_UNK'] = len(token2id) 
+        token2id['_UNK'] = len(token2id)
+        token2id['_PAD'] = len(token2id) + 1
         id2token = {k: v for k, v in enumerate(token2id)}
         label2id = {v: k for k, v in enumerate(list(set(y)))}
         id2label = {k: v for k, v in enumerate(label2id)}
@@ -51,13 +52,14 @@ class CreateDataset():
         # Padding with dummy _UNK token
         lengths_array = df.doc_len.values
         # max_len = max(lengths_array)
+        pad_token = len(token2id) + 1
         data_padded = np.zeros((len_x, max_doc_tokens), dtype=np.int)
         for i in xrange(data_padded.shape[0]):
             for j in xrange(data_padded.shape[1]):
                 try:
                     data_padded[i][j] = df['data_tokens'].values[i][j]
                 except IndexError:
-                    pass
+                    data_padded[i][j] = pad_token
 
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)

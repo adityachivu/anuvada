@@ -17,7 +17,7 @@ from ..utils import add_metrics_to_log, log_to_message, make_batches, ProgressBa
 
 DEFAULT_LOSS = CrossEntropyLoss()
 DEFAULT_OPTIMIZER = partial(SGD, lr=0.001, momentum=0.9)
-
+# DEFAULT_DTYPE = torch.FloatTensor
 
 class FitModule(Module):
 
@@ -36,6 +36,7 @@ class FitModule(Module):
             seed=None,
             loss=DEFAULT_LOSS,
             optimizer=DEFAULT_OPTIMIZER,
+            run_on='cpu',
             metrics=None):
         """Trains the model similar to Keras' .fit(...) method
 
@@ -71,6 +72,12 @@ class FitModule(Module):
         # Returns
             list of OrderedDicts with training metrics
         """
+        if run_on == 'cpu':
+            self.dtype = torch.FloatTensor
+            self.embedding_tensor = torch.LongTensor
+        if run_on == 'gpu':
+            self.dtype = torch.cuda.FloatTensor
+            self.embedding_tensor = torch.cuda.LongTensor
         if seed and seed >= 0:
             np.random.seed(seed)
             torch.manual_seed(seed)
@@ -109,8 +116,8 @@ class FitModule(Module):
                 # Get batch data
                 batch_idxs = train_idxs[batch_start:batch_end]
                 batch_idxs = torch.from_numpy(batch_idxs).long()
-                x_batch = Variable(x[batch_idxs])
-                y_batch = Variable(y[batch_idxs])
+                x_batch = Variable(x[batch_idxs]).type(self.embedding_tensor)
+                y_batch = Variable(y[batch_idxs]).type(self.embedding_tensor)
                 mask = masks_for_rnn[batch_start: batch_end]
                 self.batch_size = batch_size
                 init_hidden = self.init_hidden()
@@ -130,7 +137,7 @@ class FitModule(Module):
                 add_metrics_to_log(log, metrics, y, y_train_pred)
             if val_x is not None and val_y is not None and masks_for_rnn_val is not None:
                 y_val_pred = self.predict(val_x, masks_for_rnn_val)
-                val_loss = loss(Variable(y_val_pred), Variable(val_y))
+                val_loss = loss(Variable(y_val_pred).type(self.dtype), Variable(val_y).type(self.embedding_tensor))
                 log['val_loss'] = val_loss.data[0]
                 if metrics:
                     add_metrics_to_log(log, metrics, val_y, y_val_pred, 'val_')
@@ -162,7 +169,7 @@ class FitModule(Module):
             batch_idxs = train_idxs[batch_start : batch_end]
             mask = masks_for_rnn[batch_start: batch_end]
             batch_idxs = torch.from_numpy(batch_idxs)
-            x_batch = Variable(x[batch_idxs])
+            x_batch = Variable(x[batch_idxs]).type(self.embedding_tensor)
             # Predict
             y_batch_pred = self(x_batch, mask, init_hidden).data
             # Infer prediction shape
