@@ -5,6 +5,7 @@ https://github.com/henryre/pytorch-fitmodule
 
 import numpy as np
 import sys
+import torch
 
 from functools import partial
 
@@ -59,3 +60,16 @@ class ProgressBar(object):
         self.bar(self.N-1)
         sys.stdout.write("{0}\n\n".format(message))
         sys.stdout.flush()
+
+
+def save_model(model_object, filepath):
+    torch.save(model_object.state_dict(), filepath)
+    print 'Model saved.'
+    return None
+
+
+def load_model(model_object, filepath):
+    weights = torch.load(filepath)
+    model_object.load_state_dict(weights)
+    print 'Model loaded.'
+    return None

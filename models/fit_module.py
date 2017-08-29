@@ -16,7 +16,7 @@ from ..utils import add_metrics_to_log, log_to_message, make_batches, ProgressBa
 
 
 DEFAULT_LOSS = CrossEntropyLoss()
-DEFAULT_OPTIMIZER = partial(SGD, lr=0.001, momentum=0.9)
+DEFAULT_OPTIMIZER = partial(SGD, lr=0.01, momentum=0.9)
 # DEFAULT_DTYPE = torch.FloatTensor
 
 class FitModule(Module):
@@ -78,6 +78,7 @@ class FitModule(Module):
         if run_on == 'gpu':
             self.dtype = torch.cuda.FloatTensor
             self.embedding_tensor = torch.cuda.LongTensor
+            self.cuda()
         if seed and seed >= 0:
             np.random.seed(seed)
             torch.manual_seed(seed)
@@ -106,6 +107,7 @@ class FitModule(Module):
                 np.random.shuffle(train_idxs)
             # Get batches
             batches = make_batches(n, batch_size)
+            batches.pop()
             # Setup logger
             if verbose:
                 pb = ProgressBar(len(batches))
@@ -162,18 +164,22 @@ class FitModule(Module):
         train_idxs = np.arange(n,dtype=np.int64)
         batch_size = self.batch_size
         batches = make_batches(n, batch_size)
+        batches.pop()
         self.eval()
         init_hidden = self.init_hidden()
         for batch_i, (batch_start, batch_end) in enumerate(batches):
             # Get batch data
             batch_idxs = train_idxs[batch_start : batch_end]
             mask = masks_for_rnn[batch_start: batch_end]
-            batch_idxs = torch.from_numpy(batch_idxs)
-            x_batch = Variable(x[batch_idxs]).type(self.embedding_tensor)
+            batch_idxs = torch.from_numpy(batch_idxs).long()
+            x_batch = x[batch_idxs]
+            x_batch = Variable(x_batch).type(self.embedding_tensor)
             # Predict
             y_batch_pred = self(x_batch, mask, init_hidden).data
             # Infer prediction shape
             if batch_i == 0:
-                y_pred = torch.zeros((n,) + y_batch_pred.size()[1:])
+                y_pred = torch.zeros((n,) + y_batch_pred.size()[1:]).type(self.dtype)
+            #print batch_idxs
+            batch_idxs = batch_idxs.type(self.embedding_tensor)
             y_pred[batch_idxs] = y_batch_pred
         return y_pred

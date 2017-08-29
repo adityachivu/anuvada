@@ -122,7 +122,7 @@ class AttentionClassifier(FitModule):
         x = list(x[0,:].data.cpu().numpy())
         words = [id2token[y] for y in x]
         with codecs.open(filepath, "w",encoding="utf-8") as html_file:
-            for word, alpha in zip(words, attention_values / attention_values.max()):
+            for word, alpha in zip(words, attention_values/ attention_values.max()):
                 html_file.write('<font style="background: rgba(255, 255, 0, %f)">%s</font>\n' % (alpha, word))
         return None
 

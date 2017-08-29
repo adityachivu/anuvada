@@ -87,12 +87,12 @@ y = torch.from_numpy(y)
 
 
 ```python
-acf = AttentionClassifier(vocab_size=len(token2id),embed_size=25,gru_hidden=25,n_classes=len(label2id))
+acf = AttentionClassifier(vocab_size=len(token2id)+2,embed_size=25,gru_hidden=25,n_classes=len(label2id))
 ```
 
 
 ```python
-loss = acf.fit(x,y, lengths_mask ,epochs=5)
+loss = acf.fit(x,y, lengths_mask ,epochs=5, validation_split=0.2)
 ```
 
     Epoch 1 / 5
@@ -123,9 +123,8 @@ loss = acf.fit(x,y, lengths_mask ,epochs=5)
 - [x] Implement support for validation split
 - [ ] Separate modules for CNN and RNN
 - [x] Implement GPU Support
-- [ ] Implement support for custom loss function, learning rate tuning, custom metrics
-- [ ] Support for loading and saving models
-- [ ] Look into early stopping, learning rate scheduler functions for proper tuning
+- [x] Implement support for custom loss function, learning rate tuning, custom metrics
+- [x] Support for loading and saving models
 
 ## Acknowledgments
 
